@@ -46,7 +46,7 @@ const ParamsSchema = schema.object({
 
 export function getActionType(logger: Logger): ActionType {
   return {
-    id: '.rundeck',
+    id: 'cloud.rundeck',
     name: 'rundeck',
     validate: {
       config: schema.object(configSchemaProps),
@@ -64,23 +64,23 @@ export async function executor(
 
   const actionId = execOptions.actionId;
 
-  const { 
-    rundeckBaseUrl, 
-    rundeckApiVersion, 
-    rundeckJobId, 
-    headers = {} 
+  const {
+    rundeckBaseUrl,
+    rundeckApiVersion,
+    rundeckJobId,
+    headers = {}
   } = execOptions.config as ActionTypeConfigType;
-  
-  const { 
-    rundeckApiToken, 
-    pdApiKey, 
-    slackWebhookUrl 
+
+  const {
+    rundeckApiToken,
+    pdApiKey,
+    slackWebhookUrl
   } = execOptions.secrets as ActionTypeSecretsType;
 
-  const { 
-    dedupKey, 
-    alertName, 
-    jobParams 
+  const {
+    dedupKey,
+    alertName,
+    jobParams
   } = execOptions.params as ActionParamsType;
 
   // call Rundeck job execution API
@@ -91,9 +91,9 @@ export async function executor(
       headers,
       rundeckBaseUrl,
       rundeckApiToken,
-      rundeckApiVersion, 
-      rundeckJobId, 
-      jobParams, 
+      rundeckApiVersion,
+      rundeckJobId,
+      jobParams,
       logger,
     }
 
@@ -106,7 +106,7 @@ export async function executor(
     logger.warn(`Error on ${actionId} rundeck action: ${message}`);
     return errorResult(actionId, message);
   }
-  
+
   // retrieve the rundeck job link
   const executionLink = rundeckResult.data.permalink;
 
@@ -160,8 +160,8 @@ export async function executor(
     logger.info(`Retrieving Pager Duty incident list succeeded in rundeck action "${actionId}".`);
 
   } catch (err) {
-    
-    const message = err.response ? `${err.response.status} ${err.response.data.error.message}` : err.message; 
+
+    const message = err.response ? `${err.response.status} ${err.response.data.error.message}` : err.message;
     logger.warn(`error on ${actionId} rundeck action: an error occurred while calling pager duty API: ${message}`);
     return errorPagerDutyProcess(actionId, message);
   }
@@ -196,18 +196,18 @@ export async function executor(
     return errorPagerDutyProcess(actionId, err.message);
   }
 
-  logger.info(`response from rundeck action "${actionId}": [HTTP ${rundeckResult.status}] ${rundeckResult.statusText}`);    
-  
+  logger.info(`response from rundeck action "${actionId}": [HTTP ${rundeckResult.status}] ${rundeckResult.statusText}`);
+
   return successResult(rundeckResult.data);
-  
+
 }
 
 async function executeRundeckJob({
-  headers, 
+  headers,
   rundeckBaseUrl,
-  rundeckApiToken, 
-  rundeckApiVersion, 
-  rundeckJobId, 
+  rundeckApiToken,
+  rundeckApiVersion,
+  rundeckJobId,
   jobParams,
 }): Promise<AxiosResponse|AxiosError> {
 
@@ -231,8 +231,8 @@ async function getPagerDutyIncidentList({headers, pdApiKey, dedupKey}): Promise<
   return await axios.get(pdIncidentListApiUrl, { headers });
 }
 
-async function addNoteToPagerDutyIncident({ headers, 
-  pdApiKey, 
+async function addNoteToPagerDutyIncident({ headers,
+  pdApiKey,
   incidentId,
   executionLink,
 }): Promise<AxiosResponse|AxiosError> {
@@ -277,4 +277,3 @@ function errorResult(id: string, message: string): ActionTypeExecutorResult {
     message: errMessage,
   };
 }
-
